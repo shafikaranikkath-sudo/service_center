@@ -1,0 +1,8 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Create User</h3>
+<form method="post" class="card shadow-sm"><div class="card-body">{% csrf_token %}
+{{ form.as_p }}
+<button class="btn btn-success">Create</button>
+</div></form>
+{% endblock %}

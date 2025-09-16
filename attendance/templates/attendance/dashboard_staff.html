@@ -1,0 +1,17 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Staff Dashboard</h3>
+<div class="d-flex gap-2 mb-3">
+<a class="btn btn-success" href="{% url 'attendance:check_in' %}">Check In</a>
+<a class="btn btn-danger" href="{% url 'attendance:check_out' %}">Check Out</a>
+</div>
+{% if last_log %}
+<div class="card shadow-sm"><div class="card-body">
+<h5>Your Last Log</h5>
+<p>In: {{ last_log.check_in_time|date:'d M Y H:i' }}<br>
+Out: {% if last_log.check_out_time %}{{ last_log.check_out_time|date:'d M Y H:i' }}{% else %}<span class="badge bg-warning">Open</span>{% endif %}
+</p>
+{% if has_open %}<div class="alert alert-info">You have an open shift. Don't forget to check out!</div>{% endif %}
+</div></div>
+{% endif %}
+{% endblock %}

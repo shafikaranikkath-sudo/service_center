@@ -1,0 +1,20 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+<h3>Users</h3>
+<a class="btn btn-primary" href="{% url 'attendance:user_create' %}">Create User</a>
+</div>
+<table class="table table-striped mt-3">
+<thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Roles</th></tr></thead>
+<tbody>
+{% for u in users %}
+<tr>
+<td>{{ u.username }}</td>
+<td>{{ u.get_full_name }}</td>
+<td>{{ u.email }}</td>
+<td>{% for g in u.groups.all %}<span class="badge bg-secondary me-1">{{ g.name }}</span>{% empty %}<span class="text-muted">None</span>{% endfor %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
