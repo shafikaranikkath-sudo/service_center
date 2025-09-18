@@ -27,5 +27,7 @@
 <div class="mt-3">
 <a class="btn btn-secondary" href="{% url 'attendance:users_list' %}">Manage Users</a>
 <a class="btn btn-outline-secondary" href="{% url 'attendance:logs_list' %}">View All Logs</a>
+<a class="btn btn-outline-primary" href="{% url 'cashbook:transaction_list' %}">💰 Cashbook</a>
+<a class="btn btn-outline-secondary" href="{% url 'cashbook:cashbook_summary' %}">📊 Summary</a>
 </div>
 {% endblock %}

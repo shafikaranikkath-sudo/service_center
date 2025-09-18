@@ -4,6 +4,9 @@
 <div class="d-flex gap-2 mb-3">
 <a class="btn btn-success" href="{% url 'attendance:check_in' %}">Check In</a>
 <a class="btn btn-danger" href="{% url 'attendance:check_out' %}">Check Out</a>
+<a class="btn btn-outline-primary" href="{% url 'cashbook:transaction_list' %}">💰 Cashbook</a>
+<a class="btn btn-outline-secondary" href="{% url 'cashbook:cashbook_summary' %}">📊 Summary</a>
+
 </div>
 {% if last_log %}
 <div class="card shadow-sm"><div class="card-body">

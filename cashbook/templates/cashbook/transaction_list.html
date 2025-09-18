@@ -1,0 +1,28 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Cash Book</h3>
+<a class="btn btn-primary mb-3" href="{% url 'cashbook:transaction_create' %}">+ Add Transaction</a>
+<table class="table table-striped">
+  <thead>
+    <tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>User</th></tr>
+  </thead>
+  <tbody>
+    {% for t in transactions %}
+    <tr>
+      <td>{{ t.date|date:"d M Y H:i" }}</td>
+      <td>
+        <span class="badge {% if t.transaction_type == 'INCOME' %}bg-success{% else %}bg-danger{% endif %}">
+          {{ t.get_transaction_type_display }}
+        </span>
+      </td>
+      <td>{{ t.amount }}</td>
+      <td>{{ t.account }}</td>
+      <td>{{ t.description }}</td>
+      <td>{{ t.user.username }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No transactions yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Cashbook Summary</h3>
+
+<!-- Date Range Filter -->
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <label class="form-label">From:</label>
+    <input type="date" name="from_date" value="{{ from_date }}" class="form-control">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">To:</label>
+    <input type="date" name="to_date" value="{{ to_date }}" class="form-control">
+  </div>
+  <div class="col-md-2 align-self-end">
+    <button class="btn btn-primary w-100">Filter</button>
+  </div>
+  <div class="col-md-2 align-self-end">
+    <!-- Clear filter button -->
+    <a href="{% url 'cashbook:cashbook_summary' %}" class="btn btn-secondary w-100">Clear Filter</a>
+  </div>
+</form>
+
+<div class="row mb-4">
+  <div class="col-md-3"><div class="card p-3 bg-success text-white">Today's Income: {{ summary.today_income }}</div></div>
+  <div class="col-md-3"><div class="card p-3 bg-danger text-white">Today's Expense: {{ summary.today_expense }}</div></div>
+  <div class="col-md-3"><div class="card p-3 bg-primary text-white">Weekly Income: {{ summary.week_income }}</div></div>
+  <div class="col-md-3"><div class="card p-3 bg-warning text-dark">Weekly Expense: {{ summary.week_expense }}</div></div>
+</div>
+
+<div class="mt-3">
+  <h4>Total Closing Balance: {{ summary.total_balance }}</h4>
+</div>
+
+<hr>
+
+<!-- Per Account Breakdown -->
+<h4>Account-wise Balances {% if from_date and to_date %}(from {{ from_date }} to {{ to_date }}){% endif %}</h4>
+<table class="table table-bordered">
+  <thead>
+    <tr><th>Account</th><th>Total Income</th><th>Total Expense</th><th>Balance</th></tr>
+  </thead>
+  <tbody>
+    {% for account, data in accounts.items %}
+    <tr>
+      <td>{{ account }}</td>
+      <td class="text-success">{{ data.income }}</td>
+      <td class="text-danger">{{ data.expense }}</td>
+      <td class="{% if data.balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+        {{ data.balance }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
