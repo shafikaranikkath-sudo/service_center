@@ -118,20 +118,23 @@ def users_list(request):
 def user_create(request):
     if not (request.user.is_superuser or request.user.groups.filter(name='Admin').exists()):
         return HttpResponseForbidden('Admins only')
+
     if request.method == 'POST':
         form = UserCreateForm(request.POST)
-    if form.is_valid():
-        with transaction.atomic():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.save()
-            role = form.cleaned_data['role']
-            group, _ = Group.objects.get_or_create(name=role)
-            user.groups.add(group)
-            messages.success(request, f'User {user.username} created as {role}.')
-            return redirect('attendance:users_list')
-        
+        if form.is_valid():
+            with transaction.atomic():
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data['password'])
+                user.save()
+                role = form.cleaned_data['role']
+                group, _ = Group.objects.get_or_create(name=role)
+                user.groups.add(group)
+                messages.success(request, f'User {user.username} created as {role}.')
+                return redirect('attendance:users_list')
     else:
+        # ⚡ Define form for GET requests
         form = UserCreateForm()
+
     return render(request, 'attendance/user_create.html', {'form': form})
+
             
