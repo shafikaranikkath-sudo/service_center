@@ -1,0 +1,10 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Settle Pending Transaction</h3>
+<p>Pending Transaction: #{{ pending_txn.id }} | Amount: {{ pending_txn.amount }} | Description: {{ pending_txn.description }}</p>
+
+<form method="post" class="card p-3">{% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-success">Settle</button>
+</form>
+{% endblock %}

@@ -2,9 +2,35 @@
 {% block content %}
 <h3>Cash Book</h3>
 <a class="btn btn-primary mb-3" href="{% url 'cashbook:transaction_create' %}">+ Add Transaction</a>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3">
+    <select name="account" class="form-select">
+      <option value="">-- Filter by Account --</option>
+      {% for acc in accounts %}
+      <option value="{{ acc.code }}" {% if selected_account == acc.code %}selected{% endif %}>{{ acc }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select name="reference" class="form-select">
+      <option value="">-- Filter by Reference --</option>
+      <option value="direct" {% if selected_reference == "direct" %}selected{% endif %}>Direct</option>
+      {% for u in users %}
+      <option value="{{ u.id }}" {% if selected_reference == u.id|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">Filter</button>
+  </div>
+  <div class="col-md-2">
+    <a href="{% url 'cashbook:transaction_list' %}" class="btn btn-secondary w-100">Clear</a>
+  </div>
+</form>
+
 <table class="table table-striped">
   <thead>
-    <tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>User</th></tr>
+    <tr><th>Date</th><th>Type</th><th>Amount</th><th>Account</th><th>Reference</th><th>Description</th><th>User</th></tr>
   </thead>
   <tbody>
     {% for t in transactions %}
@@ -17,8 +43,10 @@
       </td>
       <td>{{ t.amount }}</td>
       <td>{{ t.account }}</td>
+      <td>{% if t.reference_user %}{{ t.reference_user.username }}{% else %}<span class="text-muted">Direct</span>{% endif %}</td>
       <td>{{ t.description }}</td>
       <td>{{ t.user.username }}</td>
+      <td>{% if t.account.code == "PENDING" %}{% if t.settled %}<span class="badge bg-secondary">Settled</span>{% else %}<a href="{% url 'cashbook:settle_pending' t.id %}" class="btn btn-sm btn-warning">Settle</a>{% endif %}{% endif %}</td>
     </tr>
     {% empty %}
     <tr><td colspan="5">No transactions yet.</td></tr>
