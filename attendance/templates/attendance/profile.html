@@ -1,7 +1,6 @@
 {% extends 'attendance/base.html' %}
 {% block content %}
 <h3>My Profile</h3>
-
 <div class="row">
   <div class="col-md-3">
     <img src="{{ request.user.profile.profile_pic.url }}" class="img-thumbnail rounded-circle" width="150" height="150">
@@ -12,7 +11,6 @@
       {{ pic_form.as_p }}
       <button class="btn btn-success">Save Changes</button>
     </form>
-    <a href="{% url 'attendance:profile_change_password' %}" class="btn btn-warning mt-3">Change Password</a>
   </div>
 </div>
 {% endblock %}

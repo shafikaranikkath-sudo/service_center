@@ -5,10 +5,21 @@ from django.shortcuts import render,get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import Group
 
-from .forms import UserUpdateForm
+from .forms import UserUpdateForm,ProfileUpdateForm,ProfilePicForm
 
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, Group
+from django.db import transaction
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from .models import CheckLog
+from .forms import UserCreateForm
 
 def in_group(name):
     def check(user):
@@ -24,16 +35,7 @@ is_staff_role = in_group('Staff')
 
 ## 🖥 attendance/views.py
 
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from django.db import transaction
-from django.http import HttpResponseForbidden
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
-from .models import CheckLog
-from .forms import UserCreateForm
+
 
 # ---- Auth ----
 def login_view(request):
@@ -195,3 +197,21 @@ def change_password(request):
 
     return render(request, "attendance/change_password.html", {"form": form})
 
+@login_required
+def profile_view(request):
+    if request.method == "POST":
+        form = ProfileUpdateForm(request.POST, instance=request.user)
+        pic_form = ProfilePicForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid() and pic_form.is_valid():
+            form.save()
+            pic_form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("attendance:profile")
+    else:
+        form = ProfileUpdateForm(instance=request.user)
+        pic_form = ProfilePicForm(instance=request.user.profile)
+
+    return render(request, "attendance/profile.html", {
+        "form": form,
+        "pic_form": pic_form,
+    })

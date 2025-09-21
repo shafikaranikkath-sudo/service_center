@@ -21,6 +21,7 @@ path('users/create/', views.user_create, name='user_create'),
 path("users/<int:user_id>/edit/", views.user_edit, name="user_edit"),
 path("users/<int:user_id>/delete/", views.user_delete, name="user_delete"),
 path("change-password/", views.change_password, name="change_password"),
+path("profile/", views.profile_view, name="profile"),
 
 
 ]
