@@ -30,6 +30,7 @@ def in_group(name):
 is_admin = in_group('Admin')
 is_manager = in_group('Manager')
 is_staff_role = in_group('Staff')
+is_agent_role = in_group('Agent')
 
 
 
@@ -70,6 +71,9 @@ def dashboard(request):
         # For simplicity, managers can view everyone; extend to teams later
         logs = CheckLog.objects.filter(check_in_time__date=timezone.localdate()).select_related('user')
         return render(request, 'attendance/dashboard_manager.html', {'logs': logs})
+    elif request.user.groups.filter(name="Agent").exists():
+        return render(request, "attendance/dashboard_agent.html")
+    
     # Staff
     last_log = CheckLog.objects.filter(user=request.user).first()
     has_open = CheckLog.objects.filter(user=request.user, check_out_time__isnull=True).exists()
@@ -123,7 +127,7 @@ def users_list(request):
 
     if role_filter:
         users = users.filter(groups__name=role_filter)
-    roles = ['Admin', 'Manager', 'Staff']  # available roles
+    roles = ['Admin', 'Manager', 'Staff','Agent']  # available roles
 
     return render(request, 'attendance/user_list.html', {"users": users,"roles": roles,"selected_role": role_filter,})
 

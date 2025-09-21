@@ -1,0 +1,59 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Customer Details</h3>
+
+<ul class="list-group mb-4">
+  <li class="list-group-item"><strong>Name:</strong> {{ customer.name }}</li>
+  <li class="list-group-item"><strong>Phone:</strong> {{ customer.phone }}</li>
+  <li class="list-group-item"><strong>Email:</strong> {{ customer.email }}</li>
+  <li class="list-group-item"><strong>Address:</strong> {{ customer.address }}</li>
+</ul>
+
+<h4>Transactions</h4>
+<h4>Summary</h4>
+<ul class="list-group mb-4">
+  <li class="list-group-item"><strong>Total Income:</strong> {{ total_income }}</li>
+  <li class="list-group-item"><strong>Total Expense:</strong> {{ total_expense }}</li>
+  <li class="list-group-item"><strong>Balance:</strong> {{ balance }}</li>
+</ul>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4>Transactions</h4>
+  <a href="{% url 'cashbook:transaction_create' %}?customer_id={{ customer.id }}" class="btn btn-success">
+    ➕ Add Transaction
+  </a>
+</div>
+
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Amount</th>
+      <th>Account</th>
+      <th>Reference User</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in transactions %}
+    <tr>
+      <td>{{ t.date|date:"Y-m-d H:i" }}</td>
+      <td>{{ t.transaction_type }}</td>
+      <td>{{ t.amount }}</td>
+      <td>{{ t.account }}</td>
+      <td>
+        {% if t.reference_user %}
+          {{ t.reference_user.username }}
+        {% else %}
+          <span class="text-muted">Direct</span>
+        {% endif %}
+      </td>
+      <td>{{ t.description }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No transactions for this customer.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

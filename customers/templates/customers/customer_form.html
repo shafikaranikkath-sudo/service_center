@@ -1,0 +1,9 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>{% if edit %}Edit{% else %}Add{% endif %} Customer</h3>
+<form method="post" class="card p-3">{% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-success">{% if edit %}Update{% else %}Save{% endif %}</button>
+  <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Agent Dashboard</h3>
+<div class="d-grid gap-2 d-md-block">
+  <a href="{% url 'cashbook:transaction_list' %}" class="btn btn-primary">💰 Cashbook</a>
+  <a href="{% url 'customers:customer_list' %}" class="btn btn-success">👥 Customers</a>
+</div>
+{% endblock %}

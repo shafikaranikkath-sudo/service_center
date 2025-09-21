@@ -3,6 +3,31 @@
 <h3>Add Transaction</h3>
 <form method="post" class="card p-3">{% csrf_token %}
   {{ form.as_p }}
+
   <button class="btn btn-success">Save</button>
 </form>
+<script>
+  // When product changes, update amount field
+  document.addEventListener("DOMContentLoaded", function() {
+    const productField = document.getElementById("id_product");
+    const amountField = document.getElementById("id_amount");
+
+    if (productField) {
+      productField.addEventListener("change", function() {
+        const productId = this.value;
+        if (productId) {
+          fetch(`/cashbook/product-price/${productId}/`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.sale_price) {
+                amountField.value = data.sale_price;
+              }
+            });
+        } else {
+          amountField.value = "";
+        }
+      });
+    }
+  });
+</script>
 {% endblock %}

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from customers.models import Customer
+from products.models import Product
 
 class Account(models.Model):
 
@@ -53,6 +55,10 @@ class CashTransaction(models.Model):
     opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     closing_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name="transactions")
+
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="transactions")
+    # amount will be auto-filled if product selected
     class Meta:
         ordering = ['-date']
 

@@ -1,0 +1,9 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Delete Product/Service</h3>
+<p>Are you sure you want to delete <strong>{{ product.item }}</strong>?</p>
+<form method="post">{% csrf_token %}
+  <button class="btn btn-danger">Yes, Delete</button>
+  <a href="{% url 'products:product_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

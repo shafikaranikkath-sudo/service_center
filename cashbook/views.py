@@ -10,7 +10,8 @@ from django.db.models import Sum
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
-
+from django.http import JsonResponse
+from products.models import Product
 
 @login_required
 def transaction_list(request):
@@ -45,6 +46,12 @@ def transaction_list(request):
 
 @login_required
 def transaction_create(request):
+
+    customer_id = request.GET.get("customer_id")  # 👈 check if coming from customer detail
+    initial_data = {}
+    if customer_id:
+        initial_data["customer"] = customer_id
+
     if request.method == "POST":
         form = CashTransactionForm(request.POST)
         if form.is_valid():
@@ -62,11 +69,26 @@ def transaction_create(request):
             if not trans.reference_user:
                 trans.reference_user = None  # None means "Direct shop work"
 
+             # 👇 Auto-set amount from product if not entered manually
+            if trans.product and (not trans.amount or trans.amount == 0):
+                trans.amount = trans.product.sale_price
+
             trans.save()
-            messages.success(request, "Transaction added successfully!")
-            return redirect("cashbook:transaction_list")
+
+            # # ✅ Redirect back to customer page if linked
+            # if trans.customer:
+            #     return redirect("customers:customer_detail", pk=trans.customer.id)
+            # ✅ Smart redirect logic
+            # ✅ Smart redirect
+            if customer_id:  # means transaction was started from a customer page
+                return redirect("customers:customer_detail", pk=trans.customer.id)
+            else:  # normal cashbook entry
+                return redirect("cashbook:transaction_list")
+
+            # messages.success(request, "Transaction added successfully!")
+            # return redirect("cashbook:transaction_list")
     else:
-        form = CashTransactionForm()
+        form = CashTransactionForm(initial=initial_data)
     return render(request, "cashbook/transaction_form.html", {"form": form})
 
 
@@ -154,3 +176,10 @@ def settle_pending(request, txn_id):
         "pending_txn": pending_txn
     })
 
+@login_required
+def product_price(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        return JsonResponse({"sale_price": float(product.sale_price)})
+    except Product.DoesNotExist:
+        return JsonResponse({"sale_price": None})

@@ -3,11 +3,11 @@ from django.contrib.auth.models import Group, Permission
 
 
 class Command(BaseCommand):
-  help = 'Create default roles: Admin, Manager, Staff'
+  help = 'Create default roles: Admin, Manager, Staff,Agent'
 
 
   def handle(self, *args, **kwargs):
-    roles = ['Admin', 'Manager', 'Staff']
+    roles = ['Admin', 'Manager', 'Staff', "Agent"]
     for r in roles:
        group, created = Group.objects.get_or_create(name=r)
        if created:

@@ -1,0 +1,26 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Products & Services</h3>
+<a href="{% url 'products:product_create' %}" class="btn btn-primary mb-3">+ Add Product/Service</a>
+<table class="table table-striped">
+  <thead>
+    <tr><th>Type</th><th>Item</th><th>Purchase Price</th><th>Sale Price</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+    <tr>
+      <td>{{ p.get_type_display }}</td>
+      <td>{{ p.item }}</td>
+      <td>{{ p.purchase_price }}</td>
+      <td>{{ p.sale_price }}</td>
+      <td>
+        <a href="{% url 'products:product_edit' p.id %}" class="btn btn-sm btn-primary">Edit</a>
+        <a href="{% url 'products:product_delete' p.id %}" class="btn btn-sm btn-danger">Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No products/services added yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

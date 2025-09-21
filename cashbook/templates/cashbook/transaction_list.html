@@ -30,7 +30,7 @@
 
 <table class="table table-striped">
   <thead>
-    <tr><th>Date</th><th>Type</th><th>Amount</th><th>Account</th><th>Reference</th><th>Description</th><th>User</th></tr>
+    <tr><th>Date</th><th>Type</th><th>Amount</th><th>Account</th><th>Customer</th><th>Reference</th><th>Description</th><th>User</th></tr>
   </thead>
   <tbody>
     {% for t in transactions %}
@@ -43,6 +43,7 @@
       </td>
       <td>{{ t.amount }}</td>
       <td>{{ t.account }}</td>
+      <td>{% if t.customer %}<a href="{% url 'customers:customer_detail' t.customer.id %}">{{ t.customer.name }}</a>{% else %}-{% endif %}</td>
       <td>{% if t.reference_user %}{{ t.reference_user.username }}{% else %}<span class="text-muted">Direct</span>{% endif %}</td>
       <td>{{ t.description }}</td>
       <td>{{ t.user.username }}</td>

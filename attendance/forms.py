@@ -5,14 +5,14 @@ from django.contrib.auth.forms import PasswordChangeForm
 
 class UserCreateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
-    role = forms.ChoiceField(choices=[('Admin','Admin'),('Manager','Manager'),('Staff','Staff')])
+    role = forms.ChoiceField(choices=[('Admin','Admin'),('Manager','Manager'),('Staff','Staff'), ('Agent', 'Agent')])
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password']
 
 class UserUpdateForm(forms.ModelForm):
     role = forms.ChoiceField(
-        choices=[('Admin', 'Admin'), ('Manager', 'Manager'), ('Staff', 'Staff')],
+        choices=[('Admin', 'Admin'), ('Manager', 'Manager'), ('Staff', 'Staff'), ('Agent', 'Agent')],
         required=False,
         help_text="Select the role for this user"
     )
