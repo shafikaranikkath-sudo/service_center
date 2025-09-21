@@ -4,16 +4,41 @@
 <h3>Users</h3>
 <a class="btn btn-primary" href="{% url 'attendance:user_create' %}">Create User</a>
 </div>
+<h3>User Management</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3">
+    <select name="role" class="form-select">
+      <option value="">-- Filter by Role --</option>
+      {% for role in roles %}
+      <option value="{{ role }}" {% if selected_role == role %}selected{% endif %}>{{ role }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">Filter</button>
+  </div>
+  <div class="col-md-2">
+    <a href="{% url 'attendance:users_list' %}" class="btn btn-secondary w-100">Clear</a>
+  </div>
+</form>
+
 <table class="table table-striped mt-3">
-<thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Roles</th></tr></thead>
+<thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
 <tbody>
 {% for u in users %}
 <tr>
 <td>{{ u.username }}</td>
 <td>{{ u.get_full_name }}</td>
 <td>{{ u.email }}</td>
-<td>{% for g in u.groups.all %}<span class="badge bg-secondary me-1">{{ g.name }}</span>{% empty %}<span class="text-muted">None</span>{% endfor %}</td>
+<td>{% for g in u.groups.all %}<span class="badge bg-secondary me-1">{{ g.name }}</span>{% empty %}<span class="text-muted">No Role</span>{% endfor %}</td>
+<td>
+  <a href="{% url 'attendance:user_edit' u.id %}" class="btn btn-sm btn-primary">Edit</a>
+  <a href="{% url 'attendance:user_delete' u.id %}" class="btn btn-sm btn-danger">Delete</a>
+</td>
 </tr>
+{% empty %}
+    <tr><td colspan="4">No users found.</td></tr>
 {% endfor %}
 </tbody>
 </table>

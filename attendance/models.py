@@ -22,3 +22,5 @@ class CheckLog(models.Model):
     @property
     def is_open(self):
         return self.check_out_time is None
+    
+    

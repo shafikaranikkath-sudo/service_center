@@ -1,0 +1,9 @@
+{% extends 'attendance/base.html' %}
+{% block content %}
+<h3>Edit User: {{ user_obj.username }}</h3>
+<form method="post" class="card p-3">{% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-success">Save</button>
+  <a href="{% url 'attendance:users_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

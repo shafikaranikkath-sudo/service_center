@@ -1,10 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 
 # Create your views here.
 ## 🛂 Role helpers (in attendance/views.py top)
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import Group
 
+from .forms import UserUpdateForm
+
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 def in_group(name):
     def check(user):
@@ -109,10 +113,17 @@ def logs_list(request):
 # ---- User management (Admin only) ----
 @login_required
 def users_list(request):
-    if not (request.user.is_superuser or request.user.groups.filter(name='Admin').exists()):
-        return HttpResponseForbidden('Admins only')
-    users = User.objects.all().select_related()
-    return render(request, 'attendance/user_list.html', {'users': users})
+    if not (request.user.is_superuser or request.user.groups.filter(name__in=['Admin','Manager']).exists()):
+        return HttpResponseForbidden('Admins/Managers only')
+    role_filter = request.GET.get("role")
+
+    users = User.objects.exclude(is_superuser=True)
+
+    if role_filter:
+        users = users.filter(groups__name=role_filter)
+    roles = ['Admin', 'Manager', 'Staff']  # available roles
+
+    return render(request, 'attendance/user_list.html', {"users": users,"roles": roles,"selected_role": role_filter,})
 
 @login_required
 def user_create(request):
@@ -137,4 +148,50 @@ def user_create(request):
 
     return render(request, 'attendance/user_create.html', {'form': form})
 
-            
+
+@login_required
+def user_edit(request, user_id):
+    if not (request.user.is_superuser or request.user.groups.filter(name__in=['Admin','Manager']).exists()):
+        return HttpResponseForbidden("Admins/Managers only")
+
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == "POST":
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"User {user.username} updated successfully")
+            return redirect("attendance:users_list")
+    else:
+        form = UserUpdateForm(instance=user)
+
+    return render(request, "attendance/user_edit.html", {"form": form, "user_obj": user})            
+
+@login_required
+def user_delete(request, user_id):
+    if not (request.user.is_superuser or request.user.groups.filter(name__in=['Admin','Manager']).exists()):
+        return HttpResponseForbidden("Admins/Managers only")
+
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == "POST":
+        user.delete()
+        messages.success(request, "User deleted successfully")
+        return redirect("attendance:users_list")
+
+    return render(request, "attendance/user_confirm_delete.html", {"user_obj": user})
+
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # keep user logged in
+            messages.success(request, "Your password was changed successfully")
+            return redirect("attendance:dashboard")
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, "attendance/change_password.html", {"form": form})
+
