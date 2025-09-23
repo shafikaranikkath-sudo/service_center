@@ -1,7 +1,7 @@
 
 
 # Create your views here.
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import CashTransaction,Account
@@ -113,69 +113,89 @@ def cashbook_summary(request):
         except ValueError:
             pass
     
+    # ✅ Exclude unsettled Pending for all income/expense/balance
+    # base_qs = txns.exclude(account__code="PENDING", settled=False)
+    base_qs = txns.exclude(account__code="PENDING")
     summary = {
-        "today_income": CashTransaction.objects.filter(transaction_type="INCOME", date__date=today).aggregate(Sum("amount"))["amount__sum"] or 0,
-        "today_expense": CashTransaction.objects.filter(transaction_type="EXPENSE", date__date=today).aggregate(Sum("amount"))["amount__sum"] or 0,
-        "week_income": CashTransaction.objects.filter(transaction_type="INCOME", date__date__gte=start_week).aggregate(Sum("amount"))["amount__sum"] or 0,
-        "week_expense": CashTransaction.objects.filter(transaction_type="EXPENSE", date__date__gte=start_week).aggregate(Sum("amount"))["amount__sum"] or 0,
-        "total_balance": CashTransaction.objects.order_by('date').last().closing_balance if CashTransaction.objects.exists() else 0,
+    "today_income": base_qs.filter(transaction_type="INCOME", date__date=today).aggregate(Sum("amount"))["amount__sum"] or 0,
+    "today_expense": base_qs.filter(transaction_type="EXPENSE", date__date=today).aggregate(Sum("amount"))["amount__sum"] or 0,
+    "week_income": base_qs.filter(transaction_type="INCOME", date__date__gte=start_week).aggregate(Sum("amount"))["amount__sum"] or 0,
+    "week_expense": base_qs.filter(transaction_type="EXPENSE", date__date__gte=start_week).aggregate(Sum("amount"))["amount__sum"] or 0,
+    "total_balance": base_qs.order_by("date").last().closing_balance if base_qs.exists() else 0,
+
+    # ✅ Pending tracked separately (only unsettled)
+    "pending_total": txns.filter(account__code="PENDING", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0,
     }
 
-    # per-account balances
+
+    # # per-account balances
+    # accounts = {}
+    # for acc_code, acc_label in Account.ACCOUNT_CHOICES:
+    #     if acc_code == "PENDING":
+    #         # ✅ Show unsettled transactions for Pending account
+    #         income = txns.filter(account__code=acc_code, transaction_type="INCOME", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+    #         expense = txns.filter(account__code=acc_code, transaction_type="EXPENSE", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+    #     else:
+    #         # income = txns.filter(account__code=acc_code, transaction_type="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+    #         # expense = txns.filter(account__code=acc_code, transaction_type="EXPENSE").aggregate(Sum("amount"))["amount__sum"] or 0
+    #         # income = txns.filter(account__code=acc_code, transaction_type="INCOME", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+    #         # expense = txns.filter(account__code=acc_code, transaction_type="EXPENSE", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+    #         real_txns = txns.exclude(account__code="PENDING", settled=False)
+
+    #         income = real_txns.filter(transaction_type="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+    #         expense = real_txns.filter(transaction_type="EXPENSE").aggregate(Sum("amount"))["amount__sum"] or 0
+    #         balance = income - expense
+    #         # Track pending separately
+    #     pending_total = txns.filter(account__code="PENDING", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+    #     accounts[acc_label] = {"income": income, "expense": expense, "balance": balance}
     accounts = {}
+    total_income = 0
+    total_expense = 0
+
     for acc_code, acc_label in Account.ACCOUNT_CHOICES:
-        # income = txns.filter(account__code=acc_code, transaction_type="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
-        # expense = txns.filter(account__code=acc_code, transaction_type="EXPENSE").aggregate(Sum("amount"))["amount__sum"] or 0
-        income = txns.filter(account__code=acc_code, transaction_type="INCOME", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
-        expense = txns.filter(account__code=acc_code, transaction_type="EXPENSE", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+        if acc_code == "PENDING":
+            # Only unsettled pending transactions
+            income = txns.filter(account__code=acc_code, transaction_type="INCOME", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+            expense = txns.filter(account__code=acc_code, transaction_type="EXPENSE", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+        else:
+            # Exclude unsettled pending from normal accounts
+            acc_txns = txns.filter(account__code=acc_code).exclude(account__code="PENDING", settled=False)
+            income = acc_txns.filter(transaction_type="INCOME").aggregate(Sum("amount"))["amount__sum"] or 0
+            expense = acc_txns.filter(transaction_type="EXPENSE").aggregate(Sum("amount"))["amount__sum"] or 0
+
+            # 👈 Add to global totals (excluding pending)
+            total_income += income
+            total_expense += expense
+
         balance = income - expense
         accounts[acc_label] = {"income": income, "expense": expense, "balance": balance}
 
+        pending_total = txns.filter(account__code="PENDING", settled=False).aggregate(Sum("amount"))["amount__sum"] or 0
+        closing_balance = total_income - total_expense
+
     return render(request, "cashbook/summary.html", {"summary": summary,"accounts": accounts,"from_date": from_date,
-        "to_date": to_date,})
+        "to_date": to_date,"income": total_income,"expense": total_expense,"closing_balance": closing_balance,
+        "pending_total": pending_total,})
 
 @login_required
-def settle_pending(request, txn_id):
-    pending_txn = CashTransaction.objects.get(id=txn_id, account__code="PENDING", settled=False)
+def settle_pending(request, pk):
+    txn = get_object_or_404(CashTransaction, pk=pk, account__code="PENDING", settled=False)
 
     if request.method == "POST":
-        form = CashTransactionForm(request.POST)
-        if form.is_valid():
-            settlement = form.save(commit=False)
-            settlement.user = request.user
+        target_account_code = request.POST.get("account")
+        if target_account_code:
+            try:
+                target_account = Account.objects.get(code=target_account_code)
+                txn.account = target_account
+                txn.settled = True
+                txn.save()
+                messages.success(request, f"Pending transaction settled to {target_account.get_code_display()}")
+            except Account.DoesNotExist:
+                messages.error(request, "Invalid account selected for settlement")
+        return redirect("cashbook:transaction_list")
 
-            # balances
-            last_txn = CashTransaction.objects.order_by("date").last()
-            opening = last_txn.closing_balance if last_txn else 0
-            settlement.opening_balance = opening
-            if settlement.transaction_type == "INCOME":
-                settlement.closing_balance = opening + settlement.amount
-            else:
-                settlement.closing_balance = opening - settlement.amount
-
-            # link settlement
-            settlement.settled_from = pending_txn
-            settlement.save()
-
-            # mark pending as settled
-            pending_txn.settled = True
-            pending_txn.save()
-            
-            messages.success(request, f"Pending transaction {pending_txn.id} settled to {settlement.account}")
-            return redirect("cashbook:transaction_list")
-    else:
-        form = CashTransactionForm(initial={
-            "transaction_type": "INCOME",
-            "amount": pending_txn.amount,
-            "description": f"Settlement of pending txn {pending_txn.id}"
-        })
-
-
-    return render(request, "cashbook/settle_pending.html", {
-        "form": form,
-        "pending_txn": pending_txn
-    })
-
+    accounts = Account.objects.exclude(code="PENDING")
+    return render(request, "cashbook/settle_form.html", {"txn": txn, "accounts": accounts})
 @login_required
 def product_price(request, product_id):
     try:

@@ -1,0 +1,20 @@
+{% extends "attendance/base.html" %}
+{% block content %}
+<h3>Settle Pending Transaction</h3>
+<p><strong>Amount:</strong> {{ txn.amount }}</p>
+<p><strong>Description:</strong> {{ txn.description }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label for="account">Select Account</label>
+    <select name="account" class="form-control" required>
+      {% for acc in accounts %}
+        <option value="{{ acc.code }}">{{ acc.get_code_display }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-success">Settle</button>
+  <a href="{% url 'cashbook:transaction_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

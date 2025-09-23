@@ -29,7 +29,15 @@
 </div>
 
 <div class="mt-3">
-  <h4>Total Closing Balance: {{ summary.total_balance }}</h4>
+  <!-- <h4>Total Closing Balance: {{ summary.total_balance }}</h4>
+  <li><strong>Pending (Unsettled):</strong> {{ pending_total }}</li> -->
+<ul class="list-group">
+  <li class="list-group-item"><strong>Total Income:</strong> {{ income }}</li>
+  <li class="list-group-item"><strong>Total Expense:</strong> {{ expense }}</li>
+  <li class="list-group-item"><strong>Closing Balance:</strong> {{ closing_balance }}</li>
+  <li class="list-group-item text-warning"><strong>Pending (Unsettled):</strong> {{ pending_total }}</li>
+</ul>
+
 </div>
 
 <hr>
