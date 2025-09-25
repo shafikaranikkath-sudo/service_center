@@ -15,6 +15,8 @@
 <p>In: {{ last_log.check_in_time|date:'d M Y H:i' }}<br>
 Out: {% if last_log.check_out_time %}{{ last_log.check_out_time|date:'d M Y H:i' }}{% else %}<span class="badge bg-warning">Open</span>{% endif %}
 </p>
+<p><strong>Total Hours:</strong> {{ last_log.total_hours }}</p>
+
 {% if has_open %}<div class="alert alert-info">You have an open shift. Don't forget to check out!</div>{% endif %}
 </div></div>
 {% endif %}

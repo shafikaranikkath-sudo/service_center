@@ -21,6 +21,42 @@
   </div>
 </form>
 
+<!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-bg-success shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="card-title">Total Income</h6>
+          <h4>{{ income }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-danger shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="card-title">Total Expense</h6>
+          <h4>{{ expense }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-primary shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="card-title">Closing Balance</h6>
+          <h4>{{ closing_balance }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-bg-warning shadow-sm">
+        <div class="card-body text-center">
+          <h6 class="card-title">Pending (Unsettled)</h6>
+          <h4>{{ pending_total }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <div class="row mb-4">
   <div class="col-md-3"><div class="card p-3 bg-success text-white">Today's Income: {{ summary.today_income }}</div></div>
   <div class="col-md-3"><div class="card p-3 bg-danger text-white">Today's Expense: {{ summary.today_expense }}</div></div>

@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 # Create your models here.
 
 
 class CheckLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='check_logs')
-    check_in_time = models.DateTimeField(auto_now_add=True)
+    check_in_time = models.DateTimeField(default=timezone.now)
     check_out_time = models.DateTimeField(null=True, blank=True)
 
 
@@ -22,6 +22,17 @@ class CheckLog(models.Model):
     @property
     def is_open(self):
         return self.check_out_time is None
+    
+    @property
+    def total_hours(self):
+        """Return time worked (up to checkout, or until now if still open)."""
+        if self.check_in_time:
+            end_time = self.check_out_time or timezone.now()
+            delta = end_time - self.check_in_time
+            hours, remainder = divmod(delta.seconds, 3600)
+            minutes = remainder // 60
+            return f"{hours}h {minutes}m"
+        return "-"
     
 def user_profile_upload_path(instance, filename):
     # Each user’s profile picture goes into their own folder
